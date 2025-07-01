@@ -1,0 +1,5 @@
+__pycache__/
+.venv/
+
+# ---- Telegram Token in secret ----
+.env
