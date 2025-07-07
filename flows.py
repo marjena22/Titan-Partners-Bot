@@ -16,7 +16,7 @@ from router import pick_manager # routing to a manager
 
 
 # ──────────────────────────────── STEP MAP ────────────────────────────────
-LANG, TOPIC, MODEL, MARKET, ASKING, PR_EXTRA, PAY_EXTRA = range(7)
+LANG, TOPIC, MODEL, TRAFFIC, MARKET, DEAL, ASKING, PR_EXTRA, PAY_EXTRA = range(9)
 
 # ──────────────────────────────── TEXTS and CONSTANTS ────────────────────────────────
 LANG_BUTTONS = [
@@ -93,6 +93,29 @@ PAYMENT_BTNS = [
 
 PAY_LABEL = {"rs": "RS / Hybrid / CPA", "cpm": "CPM"} # dictionary for the manager message 
 
+TRAFFIC_Q = {
+    "EN": "What are your traffic sources? (choose as many as apply)",
+    "UA": "Які ваші джерела трафіку? (оберіть декілька)",
+    "RU": "Откуда ваш трафик? (можно несколько вариантов)",
+    "PT": "Quais são as suas fontes de tráfego? (marque todas que se aplicam)",
+    "ES": "¿Cuáles son tus fuentes de tráfico? (elige todas las que correspondan)",
+}
+
+TRAFFIC_BTNS = [
+    ("fb",        "FB"),
+    ("google",    "Google"),
+    ("inapp",     "In-app"),
+    ("push",      "Push"),
+    ("tiktok",    "Tiktok"),
+    ("uac",       "UAC"),
+    ("telegram",  "Telegram"),
+    ("influence", "Influence"),
+    ("scheme",    "Scheme"),
+    ("other",     "Other"),
+]
+
+TRAFFIC_DONE = ("traffic_done", "✅ Done")
+
 MARKET_Q = {
     "EN": "Please share the main markets you work with.",
     "UA": "Оберіть основні ринки, з якими ви працюєте.",
@@ -134,13 +157,24 @@ MARKET_BTNS = {
     ],
 }
 
+DEAL_Q = {
+    "EN": "What type of deal are you looking for?",
+    "UA": "Який тип співпраці вас цікавить?",
+    "RU": "Какой тип сделки вас интересует?",
+    "PT": "Que tipo de acordo você procura?",
+    "ES": "¿Qué tipo de acuerdo buscas?",
+}
+
+DEAL_BTNS = [
+    ("affiliate",  "Affiliate"),
+    ("advertiser", "Advertiser"),
+    ("vacancies",  "Vacancies"),
+]
+
 QUESTIONS = {
     "EN": {
         "title": "Please answer the following questions:",
         "items": [
-            ("traffic",   "What are your sources of traffic? (share links if there are any)"),
-            ("geo",       "Please specify your main GEOs"),
-            ("deal",      "What deal are you looking for?"),
             ("tgcontact", "Share your Telegram contact (@ nickname)"),
             ("email",     "Your email in our affiliate program"),
         ],
@@ -148,9 +182,6 @@ QUESTIONS = {
     "UA": {
         "title": "Будь ласка, дайте відповіді на наступні запитання:",
         "items": [
-            ("traffic",   "Які ваші джерела трафіку? (поділіться посиланнями, якщо є)"),
-            ("geo",       "Вкажіть основні GEO"),
-            ("deal",      "Який тип співпраці вас цікавить?"),
             ("tgcontact", "Поділіться своїм Telegram-контактом (@ nickname)"),
             ("email",     "Ваш email у нашій партнерській програмі"),
         ],
@@ -158,9 +189,6 @@ QUESTIONS = {
     "RU": {
         "title": "Пожалуйста, ответьте на следующие вопросы:",
         "items": [
-            ("traffic",   "Откуда ваш трафик? (пришлите ссылки, если есть)"),
-            ("geo",       "Укажите основные GEO"),
-            ("deal",      "Какой тип сделки вас интересует?"),
             ("tgcontact", "Поделитесь вашим Telegram-контактом (@ nickname)"),
             ("email",     "Ваш email в нашей партнёрской программе"),
         ],
@@ -168,9 +196,6 @@ QUESTIONS = {
     "PT": {
         "title": "Por favor, responda às seguintes perguntas:",
         "items": [
-            ("traffic",   "Quais são as suas fontes de tráfego? (envie links se houver)"),
-            ("geo",       "Informe seus principais GEOs"),
-            ("deal",      "Que tipo de acordo você procura?"),
             ("tgcontact", "Compartilhe seu contato no Telegram (@ nickname)"),
             ("email",     "Seu email no nosso programa de afiliados"),
         ],
@@ -178,9 +203,6 @@ QUESTIONS = {
     "ES": {
         "title": "Por favor, responde a las siguientes preguntas:",
         "items": [
-            ("traffic",   "¿Cuáles son tus fuentes de tráfico? (comparte enlaces si los tienes)"),
-            ("geo",       "Especifica tus GEOs principales"),
-            ("deal",      "¿Qué tipo de acuerdo buscas?"),
             ("tgcontact", "Comparte tu contacto de Telegram (@ nickname)"),
             ("email",     "Tu correo electrónico en nuestro programa de afiliados"),
         ],
@@ -224,7 +246,13 @@ ADDITIONAL_Q_BUTTON = {
     "ES": "Aún tengo preguntas",
 }
 
-START_OVER = range(1)  # just a symbolic constant, value not important
+MANAGER_WILL_CONTACT = {
+    "EN": "✅ Thanks! One of our managers will reach out shortly.",
+    "UA": "✅ Дякуємо! Наш менеджер незабаром звʼяжеться з вами.",
+    "RU": "✅ Спасибо! Наш менеджер скоро свяжется с вами.",
+    "PT": "✅ Obrigado! Um dos nossos gerentes entrará em contato em breve.",
+    "ES": "✅ ¡Gracias! Uno de nuestros managers se pondrá en contacto contigo en breve.",
+}
 
 # ────────────────────────── Questions / Answers ────────────────────────────
 def build_language_kb():
@@ -235,7 +263,7 @@ def build_language_kb():
     )
 
 async def start_over(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Restart the wizard without deleting the previous message.
+    # Always restart the wizard, even after a bot reboot.
     query = update.callback_query
     await query.answer()
 
@@ -348,20 +376,64 @@ async def choose_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def choose_payment_model(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    model_code = query.data
+    model = query.data
     await query.answer()
 
-    context.user_data["answers"]["payment_model"] = model_code
+    context.user_data["answers"]["payment_model"] = model
+    lang = context.user_data["lang"]
+    context.user_data["answers"]["traffic_sources"] = []
+
+    kb = build_traffic_kb([], lang)
+    await query.message.reply_text(TRAFFIC_Q[lang], reply_markup=kb)
+    return TRAFFIC
+
+def build_traffic_kb(selected: list[str], lang: str, freeze: bool = False):
+    rows = []
+    for code, label in TRAFFIC_BTNS:
+        prefix = "✅ " if code in selected else ""
+        rows.append([InlineKeyboardButton(prefix + label,
+                                          callback_data="noop" if freeze else code)])
+    if not freeze:                       # omit the Done row after finishing
+        rows.append([InlineKeyboardButton("✅ Done", callback_data=TRAFFIC_DONE[0])])
+    add_start_over(rows)
+    return InlineKeyboardMarkup(rows)
+
+async def choose_traffic_source(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    code = query.data
+    await query.answer()
 
     lang = context.user_data["lang"]
+    selected = context.user_data["answers"]["traffic_sources"]
 
-    # build buttons
-    btns = add_start_over([
-        [InlineKeyboardButton(t, callback_data=c)] for c, t in MARKET_BTNS[lang]
-    ])
+    # ── user pressed DONE ──────────────────────────────────────────────
+    if code == TRAFFIC_DONE[0]:
+        # lock the old message: keep ticks, remove Done, disable taps
+        await query.edit_message_reply_markup(
+            reply_markup=build_traffic_kb(selected, lang, freeze=True)
+        )
 
-    await query.message.reply_text(MARKET_Q[lang], reply_markup=InlineKeyboardMarkup(btns))
-    return MARKET
+        # ask for markets in a *new* message
+        kb_markets = add_start_over(
+            [[InlineKeyboardButton(t, callback_data=c)] for c, t in MARKET_BTNS[lang]]
+        )
+        await query.message.reply_text(
+            MARKET_Q[lang],
+            reply_markup=InlineKeyboardMarkup(kb_markets),
+        )
+        return MARKET
+
+    # ── toggle selection ──────────────────────────────────────────────
+    if code in selected:
+        selected.remove(code)
+    else:
+        selected.append(code)
+
+    # redraw same message with updated ticks
+    await query.edit_message_reply_markup(
+        reply_markup=build_traffic_kb(selected, lang)
+    )
+    return TRAFFIC
 
 
 async def choose_market(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -372,8 +444,27 @@ async def choose_market(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = context.user_data["lang"]
     context.user_data["answers"]["market"] = market_code
 
-    prompt = build_combined_prompt(lang)
+    btns = add_start_over([
+        [InlineKeyboardButton(t, callback_data=c)] for c, t in DEAL_BTNS
+    ])
 
+    await query.message.reply_text(
+        DEAL_Q[lang],
+        reply_markup=InlineKeyboardMarkup(btns),
+    )
+
+    return DEAL
+
+async def choose_deal_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    deal_code = query.data
+    await query.answer()
+
+    lang = context.user_data["lang"]
+    context.user_data["answers"]["deal_type"] = deal_code
+
+    # proceed to combined free-text questionnaire
+    prompt = build_combined_prompt(lang)
     await query.message.reply_text(
         prompt,
         reply_markup=InlineKeyboardMarkup(add_start_over([])),
@@ -381,14 +472,11 @@ async def choose_market(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ASKING
 
 async def handle_questions_left_pr(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # 'Additional questions left' button handler if user wants PR/Marketing
-
     query = update.callback_query
     await query.answer()
 
-    # --- Notify manager straight away ------------------------------------
-    lang = context.user_data["lang"]
-    mgr_user, mgr_chat = pick_manager({})          # pass empty dict or adjust
+    lang = context.user_data.get("lang", "EN")
+    mgr_user, mgr_chat = pick_manager({})
 
     await context.bot.send_message(
         chat_id=mgr_chat,
@@ -399,17 +487,14 @@ async def handle_questions_left_pr(update: Update, context: ContextTypes.DEFAULT
         )
     )
 
-    # --- Confirm to the user ---------------------------------------------
     await query.message.reply_text(
-        "✅ Thanks! One of our managers will reach out shortly.",
-        reply_markup=InlineKeyboardMarkup(add_start_over([])), # Add Start Over button
+        MANAGER_WILL_CONTACT.get(lang, MANAGER_WILL_CONTACT["EN"]),
+        reply_markup=InlineKeyboardMarkup(add_start_over([])),
     )
+    return FINISHED
 
-    return ConversationHandler.END            # conversation finished
 
-async def handle_questions_left_payment_solutions(update: Update, context: ContextTypes.DEFAULT_TYPE):   # NEW
-    # 'Additional questions left' button handler if user wants payment solutions
-    
+async def handle_questions_left_payment_solutions(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
@@ -426,11 +511,11 @@ async def handle_questions_left_payment_solutions(update: Update, context: Conte
     )
 
     await query.message.reply_text(
-        "✅ Thanks! One of our managers will reach out shortly.",
-        reply_markup=InlineKeyboardMarkup(add_start_over([])), # Add Start Over button
+        MANAGER_WILL_CONTACT.get(lang, MANAGER_WILL_CONTACT["EN"]),
+        reply_markup=InlineKeyboardMarkup(add_start_over([])),
     )
+    return FINISHED
 
-    return ConversationHandler.END
 
 
 
@@ -465,8 +550,14 @@ async def collect(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if "payment_model" in answers:
         lines.append(f"Payment model: {PAY_LABEL.get(answers['payment_model'], answers['payment_model'])}")
 
+    if "traffic_sources" in answers:
+        lines.append("Traffic: " + ", ".join(answers["traffic_sources"]))
+
     if "market" in answers:
         lines.append(f"Market: {MARKET_BTNS.get(answers['market'], answers['market'])}")
+
+    if "deal_type" in answers:
+        lines.append(f"Deal type: {answers['deal_type'].capitalize()}")
 
     lines.append("Combined answers:")
     lines.append(update.message.text)
@@ -487,7 +578,7 @@ async def _show_language_picker(query):
 
 # ────────────────────────── CONVERSATION HANDLER ─────────────────────────
 START_OVER_HANDLER = CallbackQueryHandler(start_over, pattern="^start_over$")
-FINISHED = 8  # any unused state id
+FINISHED = 9  # any unused state id
 
 def build_conv_handler():
     return ConversationHandler(
@@ -496,7 +587,9 @@ def build_conv_handler():
             LANG:   [CallbackQueryHandler(choose_lang)], # LANG − waits for a button -> choose_lang
             TOPIC:  [START_OVER_HANDLER, CallbackQueryHandler(choose_topic)], # TOPIC − waits for a button -> choose_topic
             MODEL:  [START_OVER_HANDLER, CallbackQueryHandler(choose_payment_model)], # MODEL − waits for a button -> choose_payment_model
+            TRAFFIC:[START_OVER_HANDLER, CallbackQueryHandler(choose_traffic_source)],
             MARKET: [START_OVER_HANDLER, CallbackQueryHandler(choose_market)], # MARKET − waits for a button -> choose_market
+            DEAL:   [START_OVER_HANDLER, CallbackQueryHandler(choose_deal_type)],
             PR_EXTRA: [START_OVER_HANDLER, CallbackQueryHandler(handle_questions_left_pr)], # questions left button -> routed to the manager
             PAY_EXTRA: [START_OVER_HANDLER, CallbackQueryHandler(handle_questions_left_payment_solutions)], # questions left button -> routed to the manag
             ASKING: [START_OVER_HANDLER, MessageHandler(filters.TEXT & ~filters.COMMAND, collect)], # ASKING − waits for free-text -> collect
