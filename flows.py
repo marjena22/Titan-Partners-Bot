@@ -94,11 +94,11 @@ PAYMENT_BTNS = [
 PAY_LABEL = {"rs": "RS / Hybrid / CPA", "cpm": "CPM"} # dictionary for the manager message 
 
 TRAFFIC_Q = {
-    "EN": "What are your traffic sources? (choose as many as apply)",
-    "UA": "Які ваші джерела трафіку? (оберіть декілька)",
-    "RU": "Откуда ваш трафик? (можно несколько вариантов)",
-    "PT": "Quais são as suas fontes de tráfego? (marque todas que se aplicam)",
-    "ES": "¿Cuáles son tus fuentes de tráfico? (elige todas las que correspondan)",
+    "EN": "What are your traffic sources? Select all that apply and press «Done».",
+    "UA": "Які у вас джерела трафіку? Виберіть усі потрібні та натисніть «Done».",
+    "RU": "Откуда ваш трафик? Отметьте все подходящее и нажмите «Done».",
+    "PT": "Quais são suas fontes de tráfego? Marque todas as que se aplicam e toque em «Done».",
+    "ES": "¿Cuáles son tus fuentes de tráfico? Selecciona todas las que correspondan y pulsa «Done».",
 }
 
 TRAFFIC_BTNS = [
