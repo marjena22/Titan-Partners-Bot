@@ -172,41 +172,11 @@ DEAL_BTNS = [
 ]
 
 QUESTIONS = {
-    "EN": {
-        "title": "Please answer the following questions:",
-        "items": [
-            ("tgcontact", "Share your Telegram contact (@ nickname)"),
-            ("email",     "Your email in our affiliate program"),
-        ],
-    },
-    "UA": {
-        "title": "Будь ласка, дайте відповіді на наступні запитання:",
-        "items": [
-            ("tgcontact", "Поділіться своїм Telegram-контактом (@ nickname)"),
-            ("email",     "Ваш email у нашій партнерській програмі"),
-        ],
-    },
-    "RU": {
-        "title": "Пожалуйста, ответьте на следующие вопросы:",
-        "items": [
-            ("tgcontact", "Поделитесь вашим Telegram-контактом (@ nickname)"),
-            ("email",     "Ваш email в нашей партнёрской программе"),
-        ],
-    },
-    "PT": {
-        "title": "Por favor, responda às seguintes perguntas:",
-        "items": [
-            ("tgcontact", "Compartilhe seu contato no Telegram (@ nickname)"),
-            ("email",     "Seu email no nosso programa de afiliados"),
-        ],
-    },
-    "ES": {
-        "title": "Por favor, responde a las siguientes preguntas:",
-        "items": [
-            ("tgcontact", "Comparte tu contacto de Telegram (@ nickname)"),
-            ("email",     "Tu correo electrónico en nuestro programa de afiliados"),
-        ],
-    },
+    "EN": "Please share your Telegram contact (@ nickname)",
+    "UA": "Поділіться своїм Telegram-контактом (@ nickname)",
+    "RU": "Поделитесь вашим Telegram-контактом (@ nickname)",
+    "PT": "Compartilhe seu contato no Telegram (@ nickname)",
+    "ES": "Comparte tu contacto de Telegram (@ nickname)",
 }
 
 CONFIRM = {
@@ -285,11 +255,11 @@ def add_start_over(btn_rows: list[list[InlineKeyboardButton]]):
     return btn_rows
 
 def build_combined_prompt(lang: str) -> str:
-    data = QUESTIONS[lang]
-    lines = [data["title"], ""]                     # title + blank line
-    for idx, (_key, question) in enumerate(data["items"], start=1):
-        lines.append(f"{idx}. {question}")
-    return "\n".join(lines)
+    """
+    Return the single‑line question stored in QUESTIONS.
+    Fallback to English if the requested language isn’t present.
+    """
+    return QUESTIONS.get(lang, QUESTIONS["EN"])
 
 # async function as it waits for the user response
 async def start_wizard(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -559,8 +529,7 @@ async def collect(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if "deal_type" in answers:
         lines.append(f"Deal type: {answers['deal_type'].capitalize()}")
 
-    lines.append("Combined answers:")
-    lines.append(update.message.text)
+    lines.append(f"TG nickname: {update.message.text}")
 
     await context.bot.send_message(mgr_chat, text="\n".join(lines))
     return FINISHED
