@@ -522,7 +522,7 @@ async def collect(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     # ---------- Manager alert ----------
-    mgr_user, mgr_chat = pick_manager(answers)
+    mgr_user, mgr_chat = pick_manager({"role": role})
 
     # build optional tags
     lines = [
