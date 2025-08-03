@@ -46,6 +46,7 @@ TOPIC_BUTTONS = {
         ("webmaster", "Verify my account (webmaster)"),
         ("pr",        "Connect me with PR/Marketing"),
         ("payment",   "I'd like to offer payment solutions"),
+        ("vacancies", "Vacancies"),
         ("other",     "Other"),
     ],
     "UA": [
@@ -53,6 +54,7 @@ TOPIC_BUTTONS = {
         ("webmaster", "Підтвердити акаунт (вебмайстер)"),
         ("pr",        "Зʼєднати з PR/маркетингом"),
         ("payment",   "Пропоную платіжні рішення"),
+        ("vacancies", "Вакансії"), 
         ("other",     "Інше"),
     ],
     "RU": [
@@ -60,6 +62,7 @@ TOPIC_BUTTONS = {
         ("webmaster", "Верифицировать аккаунт (вебмастер)"),
         ("pr",        "Связать с PR/маркетингом"),
         ("payment",   "Предлагаю платёжные решения"),
+        ("vacancies", "Вакансии"),
         ("other",     "Другое"),
     ],
     "PT": [
@@ -67,6 +70,7 @@ TOPIC_BUTTONS = {
         ("webmaster", "Verificar minha conta (webmaster)"),
         ("pr",        "Falar com PR/Marketing"),
         ("payment",   "Oferecer soluções de pagamento"),
+        ("vacancies", "Vagas"),
         ("other",     "Outro"),
     ],
     "ES": [
@@ -74,6 +78,7 @@ TOPIC_BUTTONS = {
         ("webmaster", "Verificar mi cuenta (webmaster)"),
         ("pr",        "Conectar con PR/Marketing"),
         ("payment",   "Ofrecer soluciones de pago"),
+        ("vacancies", "Vacantes"),
         ("other",     "Otro"),
     ],
 }
@@ -224,6 +229,14 @@ PAY_INSTR = {
     "ES": "Envía tu propuesta de soluciones de pago aquí – @YourUsername",
 }
 
+HR_INSTR = {
+    "EN": "Connect with our HR here – @YourUsername",
+    "UA": "Звʼяжіться з нашим HR тут – @YourUsername",
+    "RU": "Свяжитесь с нашим HR здесь – @YourUsername",
+    "PT": "Fale com nosso RH aqui – @YourUsername",
+    "ES": "Contacta con nuestro HR aquí – @YourUsername",
+}
+
 ADDITIONAL_Q_BUTTON = {
     "EN": "There are additional questions left",
     "UA": "У мене залишилися додаткові питання",
@@ -354,7 +367,15 @@ async def choose_topic(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text(PAY_INSTR[lang], reply_markup=InlineKeyboardMarkup(btns))
         return PAY_EXTRA
 
-    # --- 4. Other  -------------------------------------------------------
+    # --- 4. Vacancies -------------------------------------------
+    if topic_code == "vacancies":
+        await query.message.reply_text(
+            HR_INSTR[lang],
+            reply_markup=InlineKeyboardMarkup(add_start_over([]))
+        )
+        return FINISHED
+
+    # --- 5. Other  -------------------------------------------------------
     prompt = build_combined_prompt(lang)
     await query.message.reply_text(prompt)
     return ASKING        
