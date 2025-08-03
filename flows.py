@@ -157,20 +157,6 @@ MARKET_BTNS = {
     ],
 }
 
-DEAL_Q = {
-    "EN": "What type of deal are you looking for?",
-    "UA": "Який тип співпраці вас цікавить?",
-    "RU": "Какой тип сделки вас интересует?",
-    "PT": "Que tipo de acordo você procura?",
-    "ES": "¿Qué tipo de acuerdo buscas?",
-}
-
-DEAL_BTNS = [
-    ("affiliate",  "Affiliate"),
-    ("advertiser", "Advertiser"),
-    ("vacancies",  "Vacancies"),
-]
-
 QUESTIONS = {
     "EN": "Please share your Telegram contact (@ nickname)",
     "UA": "Поділіться своїм Telegram-контактом (@ nickname)",
@@ -414,26 +400,7 @@ async def choose_market(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = context.user_data["lang"]
     context.user_data["answers"]["market"] = market_code
 
-    btns = add_start_over([
-        [InlineKeyboardButton(t, callback_data=c)] for c, t in DEAL_BTNS
-    ])
-
-    await query.message.reply_text(
-        DEAL_Q[lang],
-        reply_markup=InlineKeyboardMarkup(btns),
-    )
-
-    return DEAL
-
-async def choose_deal_type(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    deal_code = query.data
-    await query.answer()
-
-    lang = context.user_data["lang"]
-    context.user_data["answers"]["deal_type"] = deal_code
-
-    # proceed to combined free-text questionnaire
+    # ── сразу переходим к последнему вопросу ─────────────────────────────
     prompt = build_combined_prompt(lang)
     await query.message.reply_text(
         prompt,
@@ -558,7 +525,6 @@ def build_conv_handler():
             MODEL:  [START_OVER_HANDLER, CallbackQueryHandler(choose_payment_model)], # MODEL − waits for a button -> choose_payment_model
             TRAFFIC:[START_OVER_HANDLER, CallbackQueryHandler(choose_traffic_source)],
             MARKET: [START_OVER_HANDLER, CallbackQueryHandler(choose_market)], # MARKET − waits for a button -> choose_market
-            DEAL:   [START_OVER_HANDLER, CallbackQueryHandler(choose_deal_type)],
             PR_EXTRA: [START_OVER_HANDLER, CallbackQueryHandler(handle_questions_left_pr)], # questions left button -> routed to the manager
             PAY_EXTRA: [START_OVER_HANDLER, CallbackQueryHandler(handle_questions_left_payment_solutions)], # questions left button -> routed to the manag
             ASKING: [START_OVER_HANDLER, MessageHandler(filters.TEXT & ~filters.COMMAND, collect)], # ASKING − waits for free-text -> collect
